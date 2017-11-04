@@ -7,35 +7,30 @@
 getEmitter.isStar = false;
 module.exports = getEmitter;
 
-/**
-* Выполнить событие для студентов, которые на него подписаны
-* @param {Array} studentsWithFunc
-*/
-function funcForStudents(studentsWithFunc) {
-    for (let i = 0; i < studentsWithFunc.length; i++) {
-        studentsWithFunc[i].func();
-    }
+function delLastLevelOfHierarchy(event) {
+    let lvl = event.split('.');
+    lvl.pop();
+
+    return lvl.join('.');
 }
 
 /**
-* Преобразовать событие вида в xxx.yyy в [xxx.yyy, xxx]
+* Преобразовать событие вида xxx.yyy в [xxx.yyy, xxx]
 * @param {String} event
 * @returns {Array}
 */
-function eventToKeys(event) {
-    let keys = [];
+function getHierarchyEvents(event) {
+    let hierarchyEvents = [];
     let event_ = event;
     if (event_.indexOf('.') === -1) {
         return [event_];
     }
     for (let i = event.split('.').length; i > 0; i--) {
-        keys[event.split('.').length - i] = event_;
-        let arr = event_.split('.');
-        arr.pop();
-        event_ = arr.join('.');
+        hierarchyEvents[event.split('.').length - i] = event_;
+        event_ = delLastLevelOfHierarchy(event_);
     }
 
-    return keys;
+    return hierarchyEvents;
 }
 
 /**
@@ -74,7 +69,7 @@ function getEmitter() {
          */
         off: function (event, context) {
             let eventsForDelete = Object.keys(events).filter(
-                storedEvent => storedEvent.indexOf(event + '.') === 0 || event === storedEvent);
+                storedEvent => event === storedEvent);
             eventsForDelete.forEach(eventForDelete => {
                 events[eventForDelete] = events[eventForDelete].filter(
                     subscriber => subscriber.student !== context);
@@ -89,10 +84,11 @@ function getEmitter() {
          * @returns {Object}
          */
         emit: function (event) {
-            let keys = eventToKeys(event);
-            for (let j = 0; j < keys.length; j++) {
-                if (!(events[keys[j]] === undefined)) {
-                    funcForStudents(events[keys[j]]);
+            let hierarchyEvents = getHierarchyEvents(event);
+            for (let j = 0; j < hierarchyEvents.length; j++) {
+                if (!(events[hierarchyEvents[j]] === undefined)) {
+                    let students = events[hierarchyEvents[j]];
+                    students.map(student => student.func());
                 }
             }
 

@@ -69,7 +69,7 @@ function getEmitter() {
          */
         off: function (event, context) {
             let eventsForDelete = Object.keys(events).filter(
-                storedEvent => event === storedEvent);
+                storedEvent => storedEvent.indexOf(event + '.') === 0 || event === storedEvent);
             eventsForDelete.forEach(eventForDelete => {
                 events[eventForDelete] = events[eventForDelete].filter(
                     subscriber => subscriber.student !== context);

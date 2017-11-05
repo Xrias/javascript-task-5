@@ -21,13 +21,13 @@ function delLastLevelOfHierarchy(event) {
 */
 function getHierarchyEvents(event) {
     let hierarchyEvents = [];
-    let event_ = event;
-    if (event_.indexOf('.') === -1) {
-        return [event_];
+    let eventCopy = event;
+    if (event.indexOf('.') === -1) {
+        return [event];
     }
     for (let i = event.split('.').length; i > 0; i--) {
-        hierarchyEvents[event.split('.').length - i] = event_;
-        event_ = delLastLevelOfHierarchy(event_);
+        hierarchyEvents[event.split('.').length - i] = eventCopy;
+        eventCopy = delLastLevelOfHierarchy(eventCopy);
     }
 
     return hierarchyEvents;
